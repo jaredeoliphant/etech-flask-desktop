@@ -11,9 +11,9 @@ def data_process(filename, starttime, endtime):
     try:
         starttime = float(starttime)
         endtime = float(endtime)
-    except:
-        starttime = 7
-        endtime = 9.8
+    except ValueError:
+        print('WARNING: starttime or endtime could not be cast as a floating point number')
+        return False
     
     # output file with suffix added as well as a log file for storing speed calculation
     outputfilename = filename.split('.csv')[0] + '_OFFSET'

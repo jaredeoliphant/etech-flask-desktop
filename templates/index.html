@@ -13,9 +13,8 @@
           <div>
               <img src="/static/images/E-TECH_Logo.jpg"  width="99" height="90">
           </div>
-      </center>
-        <h1>Upload a raw data CSV file:</h1>
-        <center>
+          <h1>Upload a raw data CSV file:</h1>
+
             <form method ="POST" enctype="multipart/form-data">
                 {{form.hidden_tag()}}
                 {{form.file.label}}{{form.file()}}

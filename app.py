@@ -9,11 +9,11 @@ from data_process import data_process
 from image_process import image_process, image_process_asi
 import os
 import shutil
+import time
 
-
-## for desktop gui only
+# for desktop gui only
 from flaskwebgui import FlaskUI
-## for desktop gui only
+# for desktop gui only
 
 app = Flask(__name__)
 
@@ -33,16 +33,14 @@ def make_archive(source, destination):
     archive_from = os.path.dirname(source)
     archive_to = os.path.basename(source.strip(os.sep))
     shutil.make_archive(name, formt, archive_from, archive_to)
-    shutil.move('%s.%s' % (name, formt), destination)
+    shutil.move(f"{name}.{formt}", destination)
 
 
 class DataForm(FlaskForm):
 
     file = FileField('CSV File  ', validators=[DataRequired(), FileAllowed(['csv'], '.CSV Files only')])
-    start = FloatField('Start time for sampling bias calculation:  ',
-                       default=7.0, validators=[DataRequired(), NumberRange(min=0, max=10)])
-    end = FloatField('End time for sampling bias calculation:  ',
-                     default=9.8, validators=[DataRequired(), NumberRange(min=0, max=10)])
+    start = FloatField('Start time for sampling bias calculation:  ', default=7.0, validators=[DataRequired()])
+    end = FloatField('End time for sampling bias calculation:  ', default=9.8, validators=[DataRequired()])
     submit = SubmitField('Submit')
 
 
@@ -54,12 +52,9 @@ class ImageForm(FlaskForm):
     rpyfile = FileField('RPY angles file  ', validators=[DataRequired(), FileAllowed(['csv'], '.CSV Files only')])
     asifile = FileField('ASI file  ')
 
-    oiv = FloatField('Input OIV time here:  ',
-                       default=0.160124)#, validators=[DataRequired(), NumberRange(min=0, max=10)])
-    final = FloatField('Input final time here:  ',
-                     default=0.01)#, validators=[DataRequired(), NumberRange(min=0, max=10)])
-    camerarate = FloatField('Input camera frame rate here:  ',
-                          default=1000.0)#, validators=[DataRequired(), NumberRange(min=0, max=10000)])
+    oiv = FloatField('Input OIV time here:  ', default=0.15, validators=[DataRequired()])
+    final = FloatField('Input final time here:  ', default=0.4, validators=[DataRequired()])
+    camerarate = FloatField('Input camera frame rate here:  ', default=1000.0, validators=[DataRequired()])
     en1317 = BooleanField('EN 1317 test')
     submit = SubmitField('Submit')
 
@@ -70,7 +65,6 @@ def index():
 
     if form.validate_on_submit():
         f = form.file.data
-
         filename = secure_filename(f.filename)
         filepath = os.path.join(
             os.path.abspath(os.path.dirname(__file__)), app.config['UPLOAD_FOLDER'], filename)
@@ -102,26 +96,26 @@ def speed_result():
         start = session['start']
         end = session['end']
 
+        time2 = time.time()
         processed_values = data_process(filepath, start, end)
+        if not processed_values:
+            return 'did not work'
+
+        print(f'data processing took: {time.time()-time2} seconds')
         # delete uploaded file
         os.remove(filepath)
 
         session['errorflag'] = processed_values['errorflag']
-
         session['outputfilename'] = processed_values['outputfilename']
+        session['testID'] = processed_values['testID']
+        session['speed_kmh'] = processed_values['speed_kmh']
+        session['imgdata'] = processed_values['imgdata']
+        session['speed_falling'] = processed_values['speed_falling']
+        session['rollbias'] = processed_values['rollbias']
+        session['pitchbias'] = processed_values['pitchbias']
+        session['yawbias'] = processed_values['yawbias']
 
-        return render_template('speed_result.html',
-                               testID=processed_values['testID'],
-                               speed_kmh=processed_values['speed_kmh'],
-                               imgdata=processed_values['imgdata'],
-                               outputfilename=processed_values['outputfilename'],
-                               speed_falling=processed_values['speed_falling'],
-                               rollbias=processed_values['rollbias'],
-                               pitchbias=processed_values['pitchbias'],
-                               yawbias=processed_values['yawbias'],
-                               starttime=start,
-                               endtime=end
-                               )
+        return render_template('speed_result.html')
     else:
         return 'did not work'
    
@@ -138,21 +132,13 @@ def getCSV():
     return Response(
         csv,
         mimetype="text/csv",
-        headers={"Content-disposition":
-                  f"attachment; filename={session['filename']}_OFFSET.csv"})
+        headers={
+            "Content-disposition": f"attachment; filename={session['filename']}_OFFSET.csv"
+        }
+    )
 
 
-@app.route('/ip_notebook',methods=['GET'])
-def ip_notebook():
-    return render_template('ip_notebook.html')
-
-
-@app.route('/result_example',methods=['GET'])
-def result_example():
-    return render_template('result_example.html')
-
-
-@app.route('/algorithm',methods=['GET'])
+@app.route('/algorithm', methods=['GET'])
 def algorithm():
     return render_template('algorithm.html')
 
@@ -166,7 +152,6 @@ def image_generator():
         fy = form.yfile.data
         fz = form.zfile.data
         frpy = form.rpyfile.data
-
 
         filenamex = secure_filename(fx.filename)
         filepathx = os.path.join(
@@ -234,6 +219,13 @@ def image_generator():
 @app.route('/image_response', methods=['GET', 'POST'])
 def image_response():
     if request.method == 'GET':
+        time1 = time.time()
+
+        if session['en1317'] and not session['filepathasi']:
+            print('running mash test images')
+        if not session['en1317'] and session['filepathasi']:
+            print('running mash test images')
+
         if session['en1317'] and session['filepathasi']:
             print('running en1317 test images')
             succeeded = image_process_asi(session['filepathx'], session['filepathy'], session['filepathz'],
@@ -243,7 +235,7 @@ def image_response():
             print('running mash test images')
             succeeded = image_process(session['filepathx'], session['filepathy'], session['filepathz'],
                                       session['filepathrpy'], session['oiv'], session['final'], session['camerarate'])
-
+        print(f"image processing took: {time.time() - time1} seconds")
         if not succeeded:
             return 'image processing failed'
 
@@ -280,9 +272,11 @@ def getZIP():
     return Response(
         zipped,
         mimetype="application/zip",
-        headers={"Content-disposition":
-                     f"attachment; filename=generated_images.zip"}
+        headers={
+            "Content-disposition": f"attachment; filename=generated_images.zip"
+                 }
     )
+
 
 if __name__ == '__main__':
     # app.run(debug=False)
