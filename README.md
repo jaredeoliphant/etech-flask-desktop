@@ -63,3 +63,11 @@ Except the processing to take about 100 seconds if the `final time` is 0.5 secon
 1. install necessary requirements with `pip install -r requirements.txt`
 2. run the following command while in the directory that contains `app.py`
 * `python app.py`
+
+
+If you want to use a new conda virtual environment you may need the following commands
+```conda create --name myNewEnv
+conda activate myNewEnv
+conda install pip
+pip install -r requirements.txt
+python app.py```
