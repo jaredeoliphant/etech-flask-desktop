@@ -137,7 +137,7 @@ def image_process(x, y, z, rpy, oiv, final, camerarate):
     dt = timedata[1] - timedata[0]
     samples_per_sec = 1 / dt
     increment = samples_per_sec / camerarate
-    num_images = int(final/dt//increment)
+    num_images = int(final/dt//increment) - 1 
 
     for ind in range(num_images):
 
@@ -292,7 +292,7 @@ def image_process_asi(x, y, z, rpy, asi, oiv, final, camerarate):
     dt = timedata[1] - timedata[0]
     samples_per_sec = 1 / dt
     increment = samples_per_sec / camerarate
-    num_images = int(final / dt // increment)
+    num_images = int(final / dt // increment) - 1
 
     for ind in range(num_images):
         x = int(ind * increment)  # every 30 samples
