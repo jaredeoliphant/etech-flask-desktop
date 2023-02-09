@@ -135,6 +135,7 @@ def data_process(filename, starttime, endtime):
     newsamplerate = len(resampled_time) / (resampled_time[-1] - resampled_time[0])
     speed_leading = newsamplerate*3600/1000/(peaks[2]-peaks[0])
     speed_falling = newsamplerate*3600/1000/(peaks[3]-peaks[1])
+    speed_center = (speed_leading + speed_falling) / 2.0
     offset = 3.6 / speed_leading
 
     xlim_param = resampled_time[peaks[0]] - 0.00105
@@ -206,6 +207,7 @@ def data_process(filename, starttime, endtime):
 
     return {'speed_kmh': speed_leading,
             'speed_falling': speed_falling,
+	    'speed_center': speed_center,
             'testID': testID,
             'imgdata': imgdata,
             'outputfilename': outputfilename,

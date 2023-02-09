@@ -137,7 +137,7 @@ def image_process(x, y, z, rpy, oiv, final, camerarate):
     dt = timedata[1] - timedata[0]
     samples_per_sec = 1 / dt
     increment = samples_per_sec / camerarate
-    num_images = int(final/dt//increment) - 1 
+    num_images = int(final/dt//increment - 10*final) 
 
     for ind in range(num_images):
 
@@ -160,19 +160,22 @@ def image_process(x, y, z, rpy, oiv, final, camerarate):
 
         line6.set_xdata(timedata[0:x+1])
         line6.set_ydata(Yawdata[0:x+1])
+        
+        try:
+            ax1.set_title(f"t={1000*timedata[x]:6.0f} ms a={Xaccel_Avg[x]:6.2f} g", fontsize=titlefontsize)
 
-        ax1.set_title(f"t={1000*timedata[x]:6.0f} ms a={Xaccel_Avg[x]:6.2f} g", fontsize=titlefontsize)
+            ax2.set_title(f"t={1000*timedata[x]:6.0f} ms a={Yaccel_Avg[x]:6.2f} g", fontsize=titlefontsize)
 
-        ax2.set_title(f"t={1000*timedata[x]:6.0f} ms a={Yaccel_Avg[x]:6.2f} g", fontsize=titlefontsize)
+            ax3.set_title(f"t={1000*timedata[x]:6.0f} ms a={Zaccel_Avg[x]:6.2f} g", fontsize=titlefontsize)
 
-        ax3.set_title(f"t={1000*timedata[x]:6.0f} ms a={Zaccel_Avg[x]:6.2f} g", fontsize=titlefontsize)
-
-        ax4.set_title(f"t={1000*timedata[x]:6.0f} ms R={Rolldata[x]:5.1f} P={Pitchdata[x]:5.1f} Y={Yawdata[x]:5.1f}",
+            ax4.set_title(f"t={1000*timedata[x]:6.0f} ms R={Rolldata[x]:5.1f} P={Pitchdata[x]:5.1f} Y={Yawdata[x]:5.1f}",
                       fontsize=titlefontsize)
+        except IndexError:
+            break
 
         plt.draw()  # required for the set_xdata command to activate
 
-        imgfilename = os.path.join(my_directory, f'{ind+10}.png')
+        imgfilename = os.path.join(my_directory, f'{ind+11}.png')
         print(f"... saving {imgfilename}")  # keep the user updated where were are at
         plt.savefig(imgfilename, transparent=False)  # # save the figure as a png file
 
@@ -292,7 +295,10 @@ def image_process_asi(x, y, z, rpy, asi, oiv, final, camerarate):
     dt = timedata[1] - timedata[0]
     samples_per_sec = 1 / dt
     increment = samples_per_sec / camerarate
-    num_images = int(final / dt // increment) - 1
+    num_images = int(final / dt // increment - 10*final)
+
+    #print('increment',increment)
+    #print('num_images',num_images)
 
     for ind in range(num_images):
         x = int(ind * increment)  # every 30 samples
@@ -318,19 +324,21 @@ def image_process_asi(x, y, z, rpy, asi, oiv, final, camerarate):
         line7.set_xdata(timedata[0:x + 1])
         line7.set_ydata(ASIdata[0:x + 1])
 
-        ax1.set_title(f"t={1000*timedata[x]:6.0f} ms a={Xaccel_Avg[x]:6.2f} g", fontsize=titlefontsize)
+        try:
+            ax1.set_title(f"t={1000*timedata[x]:6.0f} ms a={Xaccel_Avg[x]:6.2f} g", fontsize=titlefontsize)
 
-        ax2.set_title(f"t={1000*timedata[x]:6.0f} ms ASI={ASIdata[x]:6.2f}", fontsize=titlefontsize)
+            ax2.set_title(f"t={1000*timedata[x]:6.0f} ms a={Yaccel_Avg[x]:6.2f} g", fontsize=titlefontsize)
 
-        ax3.set_title(f"t={1000*timedata[x]:6.0f} ms a_y={Yaccel_Avg[x]:6.2f} g, a_z={Zaccel_Avg[x]:6.2f} g",
+            ax3.set_title(f"t={1000*timedata[x]:6.0f} ms a={Zaccel_Avg[x]:6.2f} g", fontsize=titlefontsize)
+
+            ax4.set_title(f"t={1000*timedata[x]:6.0f} ms R={Rolldata[x]:5.1f} P={Pitchdata[x]:5.1f} Y={Yawdata[x]:5.1f}",
                       fontsize=titlefontsize)
-
-        ax4.set_title(f"t={1000*timedata[x]:6.0f} ms R={Rolldata[x]:5.1f} P={Pitchdata[x]:5.1f} Y={Yawdata[x]:5.1f}",
-                      fontsize=titlefontsize)
+        except IndexError:
+            break
 
         plt.draw()  # required for the set_xdata command to activate
 
-        imgfilename = os.path.join(my_directory, f'{ind + 10}.png')
+        imgfilename = os.path.join(my_directory, f'{ind + 11}.png')
         print(f"... saving {imgfilename}")  # keep the user updated where were are at
         plt.savefig(imgfilename, transparent=False)  # # save the figure as a png file
 

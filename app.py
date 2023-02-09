@@ -109,13 +109,15 @@ def speed_result():
         session['outputfilename'] = processed_values['outputfilename']
         session['testID'] = processed_values['testID']
         session['speed_kmh'] = processed_values['speed_kmh']
-        session['imgdata'] = processed_values['imgdata']
+        # session['imgdata'] = processed_values['imgdata']
         session['speed_falling'] = processed_values['speed_falling']
+        session['speed_center'] = processed_values['speed_center']
         session['rollbias'] = processed_values['rollbias']
         session['pitchbias'] = processed_values['pitchbias']
         session['yawbias'] = processed_values['yawbias']
+        print(session)
 
-        return render_template('speed_result.html')
+        return render_template('speed_result.html',imgdata=processed_values['imgdata'])
     else:
         return 'did not work'
    
