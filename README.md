@@ -76,3 +76,9 @@ conda install pip
 pip install -r requirements.txt
 python app.py
 ```
+
+To create a standalone .exe file, use pyinstaller
+``` 
+pip install pyinstaller
+pyinstaller --onefile --add-data "templates;templates" --add-data "static;static" --name ETECH_DATA --icon "static\favicon.ico" app.py 
+```
